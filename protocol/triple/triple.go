@@ -32,6 +32,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/internal"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 )
 
 const (
@@ -48,7 +49,7 @@ func init() {
 }
 
 type TripleProtocol struct {
-	protocol.BaseProtocol
+	base.BaseProtocol
 	serverLock sync.Mutex
 	serverMap  map[string]*Server
 }
@@ -126,7 +127,7 @@ func (tp *TripleProtocol) Destroy() {
 
 func NewTripleProtocol() *TripleProtocol {
 	return &TripleProtocol{
-		BaseProtocol: protocol.NewBaseProtocol(),
+		BaseProtocol: base.NewBaseProtocol(),
 		serverMap:    make(map[string]*Server),
 	}
 }

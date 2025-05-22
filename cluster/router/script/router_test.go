@@ -30,6 +30,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/config_center"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 	"dubbo.apache.org/dubbo-go/v3/remoting"
 )
@@ -61,7 +62,7 @@ var url3 = func() *common.URL {
 
 func getRouteCheckArgs() ([]protocol.Invoker, protocol.Invocation, context.Context) {
 	return []protocol.Invoker{
-			protocol.NewBaseInvoker(url1()), protocol.NewBaseInvoker(url2()), protocol.NewBaseInvoker(url3()),
+			base.NewBaseInvoker(url1()), base.NewBaseInvoker(url2()), base.NewBaseInvoker(url3()),
 		}, invocation.NewRPCInvocation("GetUser", nil, map[string]any{
 			"attachmentKey": []string{"attachmentValue"},
 		}),

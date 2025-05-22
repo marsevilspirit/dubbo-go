@@ -31,6 +31,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/rest/client"
 	_ "dubbo.apache.org/dubbo-go/v3/protocol/rest/client/client_impl"
 	rest_config "dubbo.apache.org/dubbo-go/v3/protocol/rest/config"
@@ -50,7 +51,7 @@ func init() {
 
 // nolint
 type RestProtocol struct {
-	protocol.BaseProtocol
+	base.BaseProtocol
 	serverLock sync.Mutex
 	serverMap  map[string]server.RestServer
 	clientLock sync.Mutex
@@ -60,7 +61,7 @@ type RestProtocol struct {
 // NewRestProtocol returns a RestProtocol
 func NewRestProtocol() *RestProtocol {
 	return &RestProtocol{
-		BaseProtocol: protocol.NewBaseProtocol(),
+		BaseProtocol: base.NewBaseProtocol(),
 		serverMap:    make(map[string]server.RestServer, 8),
 		clientMap:    make(map[client.RestOptions]client.RestClient, 8),
 	}

@@ -36,13 +36,14 @@ import (
 import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 )
 
 var errNoReply = errors.New("request need @response")
 
 // nolint
 type GrpcInvoker struct {
-	protocol.BaseInvoker
+	base.BaseInvoker
 	quitOnce    sync.Once
 	clientGuard *sync.RWMutex
 	client      *Client
@@ -51,7 +52,7 @@ type GrpcInvoker struct {
 // NewGrpcInvoker returns a Grpc invoker instance
 func NewGrpcInvoker(url *common.URL, client *Client) *GrpcInvoker {
 	return &GrpcInvoker{
-		BaseInvoker: *protocol.NewBaseInvoker(url),
+		BaseInvoker: *base.NewBaseInvoker(url),
 		clientGuard: &sync.RWMutex{},
 		client:      client,
 	}

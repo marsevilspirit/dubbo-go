@@ -35,6 +35,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 	"dubbo.apache.org/dubbo-go/v3/remoting"
 	"dubbo.apache.org/dubbo-go/v3/remoting/getty"
@@ -60,7 +61,7 @@ var dubboProtocol *DubboProtocol
 
 // DubboProtocol supports dubbo protocol. It implements Protocol interface for dubbo protocol.
 type DubboProtocol struct {
-	protocol.BaseProtocol
+	base.BaseProtocol
 	// It is store relationship about serviceKey(group/interface:version) and ExchangeServer
 	// The ExchangeServer is introduced to replace of Server. Because Server is depend on getty directly.
 	serverMap  map[string]*remoting.ExchangeServer
@@ -70,7 +71,7 @@ type DubboProtocol struct {
 // NewDubboProtocol create a dubbo protocol.
 func NewDubboProtocol() *DubboProtocol {
 	return &DubboProtocol{
-		BaseProtocol: protocol.NewBaseProtocol(),
+		BaseProtocol: base.NewBaseProtocol(),
 		serverMap:    make(map[string]*remoting.ExchangeServer),
 	}
 }

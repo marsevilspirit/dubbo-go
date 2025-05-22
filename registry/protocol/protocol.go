@@ -39,6 +39,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/config_center"
 	_ "dubbo.apache.org/dubbo-go/v3/config_center/configurator"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/protocolwrapper"
 	"dubbo.apache.org/dubbo-go/v3/registry"
 	"dubbo.apache.org/dubbo-go/v3/remoting"
@@ -459,13 +460,13 @@ func GetProtocol() protocol.Protocol {
 
 type invokerDelegate struct {
 	invoker protocol.Invoker
-	protocol.BaseInvoker
+	base.BaseInvoker
 }
 
 func newInvokerDelegate(invoker protocol.Invoker, url *common.URL) *invokerDelegate {
 	return &invokerDelegate{
 		invoker:     invoker,
-		BaseInvoker: *protocol.NewBaseInvoker(url),
+		BaseInvoker: *base.NewBaseInvoker(url),
 	}
 }
 

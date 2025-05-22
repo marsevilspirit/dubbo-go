@@ -37,6 +37,7 @@ import (
 import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 )
 
@@ -48,7 +49,7 @@ func TestSentinelFilter_QPS(t *testing.T) {
 		"module=dubbogo+user-info+server&org=ikurento.com&owner=ZX&pid=1447&revision=0.0.1&" +
 		"side=provider&timeout=3000&timestamp=1556509797245&bean.name=UserProvider")
 	assert.NoError(t, err)
-	mockInvoker := protocol.NewBaseInvoker(url)
+	mockInvoker := base.NewBaseInvoker(url)
 	interfaceResourceName, _ := getResourceName(mockInvoker,
 		invocation.NewRPCInvocation("hello", []any{"OK"}, make(map[string]any)), "prefix_")
 	mockInvocation := invocation.NewRPCInvocation("hello", []any{"OK"}, make(map[string]any))
@@ -90,7 +91,7 @@ func TestSentinelFilter_QPS(t *testing.T) {
 }
 
 type ErrInvoker struct {
-	*protocol.BaseInvoker
+	*base.BaseInvoker
 }
 
 func (ei *ErrInvoker) Invoke(context context.Context, invocation protocol.Invocation) protocol.Result {
@@ -121,7 +122,7 @@ func TestSentinelFilter_ErrorCount(t *testing.T) {
 		"module=dubbogo+user-info+server&org=test.com&owner=ZX&pid=1447&revision=0.0.1&" +
 		"side=provider&timeout=3000&timestamp=1556509797245&bean.name=UserProvider")
 	assert.NoError(t, err)
-	mockInvoker := &ErrInvoker{protocol.NewBaseInvoker(url)}
+	mockInvoker := &ErrInvoker{base.NewBaseInvoker(url)}
 	_, methodResourceName := getResourceName(mockInvoker,
 		invocation.NewRPCInvocation("hi", []any{"OK"}, make(map[string]any)), DefaultProviderPrefix)
 	mockInvocation := invocation.NewRPCInvocation("hi", []any{"OK"}, make(map[string]any))
@@ -165,7 +166,7 @@ func TestConsumerFilter_Invoke(t *testing.T) {
 		"module=dubbogo+user-info+server&org=ikurento.com&owner=ZX&pid=1447&revision=0.0.1&" +
 		"side=provider&timeout=3000&timestamp=1556509797245&bean.name=UserProvider")
 	assert.NoError(t, err)
-	mockInvoker := protocol.NewBaseInvoker(url)
+	mockInvoker := base.NewBaseInvoker(url)
 	mockInvocation := invocation.NewRPCInvocation("hello", []any{"OK"}, make(map[string]any))
 	result := f.Invoke(context.TODO(), mockInvoker, mockInvocation)
 	assert.NoError(t, result.Error())
@@ -179,7 +180,7 @@ func TestProviderFilter_Invoke(t *testing.T) {
 		"module=dubbogo+user-info+server&org=ikurento.com&owner=ZX&pid=1447&revision=0.0.1&" +
 		"side=provider&timeout=3000&timestamp=1556509797245&bean.name=UserProvider")
 	assert.NoError(t, err)
-	mockInvoker := protocol.NewBaseInvoker(url)
+	mockInvoker := base.NewBaseInvoker(url)
 	mockInvocation := invocation.NewRPCInvocation("hello", []any{"OK"}, make(map[string]any))
 	result := f.Invoke(context.TODO(), mockInvoker, mockInvocation)
 	assert.NoError(t, result.Error())
@@ -193,7 +194,7 @@ func TestGetResourceName(t *testing.T) {
 		"module=dubbogo+user-info+server&org=ikurento.com&owner=ZX&pid=1447&revision=0.0.1&" +
 		"side=provider&timeout=3000&timestamp=1556509797245&bean.name=UserProvider")
 	assert.NoError(t, err)
-	mockInvoker := protocol.NewBaseInvoker(url)
+	mockInvoker := base.NewBaseInvoker(url)
 	interfaceResourceName, methodResourceName := getResourceName(mockInvoker,
 		invocation.NewRPCInvocation("hello", []any{"OK"}, make(map[string]any)), "prefix_")
 	assert.Equal(t, "com.ikurento.user.UserProvider:myGroup:1.0.0", interfaceResourceName)

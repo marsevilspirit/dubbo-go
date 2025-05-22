@@ -33,6 +33,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 )
 
@@ -48,13 +49,13 @@ func TestRandomlbSelect(t *testing.T) {
 	var invokers []protocol.Invoker
 
 	u, _ := common.NewURL(fmt.Sprintf(tmpUrlFormat, 0))
-	invokers = append(invokers, protocol.NewBaseInvoker(u))
+	invokers = append(invokers, base.NewBaseInvoker(u))
 	i := randomlb.Select(invokers, &invocation.RPCInvocation{})
 	assert.True(t, i.GetURL().URLEqual(u))
 
 	for i := 1; i < 10; i++ {
 		u, _ := common.NewURL(fmt.Sprintf(tmpUrlFormat, i))
-		invokers = append(invokers, protocol.NewBaseInvoker(u))
+		invokers = append(invokers, base.NewBaseInvoker(u))
 	}
 	randomlb.Select(invokers, &invocation.RPCInvocation{})
 }
@@ -65,13 +66,13 @@ func TestRandomlbSelectWeight(t *testing.T) {
 	invokers := []protocol.Invoker{}
 	for i := 0; i < 10; i++ {
 		u, _ := common.NewURL(fmt.Sprintf(tmpUrlFormat, i))
-		invokers = append(invokers, protocol.NewBaseInvoker(u))
+		invokers = append(invokers, base.NewBaseInvoker(u))
 	}
 
 	urlParams := url.Values{}
 	urlParams.Set("methods.test."+constant.WeightKey, "10000000000000")
 	urll, _ := common.NewURL(tmpUrl, common.WithParams(urlParams))
-	invokers = append(invokers, protocol.NewBaseInvoker(urll))
+	invokers = append(invokers, base.NewBaseInvoker(urll))
 	ivc := invocation.NewRPCInvocationWithOptions(invocation.WithMethodName("test"))
 
 	var selectedInvoker []protocol.Invoker
@@ -97,13 +98,13 @@ func TestRandomlbSelectWarmup(t *testing.T) {
 	invokers := []protocol.Invoker{}
 	for i := 0; i < 10; i++ {
 		u, _ := common.NewURL(fmt.Sprintf(tmpUrlFormat, i))
-		invokers = append(invokers, protocol.NewBaseInvoker(u))
+		invokers = append(invokers, base.NewBaseInvoker(u))
 	}
 
 	urlParams := url.Values{}
 	urlParams.Set(constant.RemoteTimestampKey, strconv.FormatInt(time.Now().Add(time.Minute*(-9)).Unix(), 10))
 	urll, _ := common.NewURL(tmpUrl, common.WithParams(urlParams))
-	invokers = append(invokers, protocol.NewBaseInvoker(urll))
+	invokers = append(invokers, base.NewBaseInvoker(urll))
 	ivc := invocation.NewRPCInvocationWithOptions(invocation.WithMethodName("test"))
 
 	var selectedInvoker []protocol.Invoker

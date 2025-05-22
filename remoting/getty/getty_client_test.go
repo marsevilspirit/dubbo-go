@@ -39,6 +39,7 @@ import (
 	. "dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/config"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 	"dubbo.apache.org/dubbo-go/v3/proxy/proxy_factory"
 	"dubbo.apache.org/dubbo-go/v3/remoting"
@@ -384,7 +385,7 @@ func InitTest(t *testing.T) (*Server, *common.URL) {
 	_, err = common.ServiceMap.Register("", url.Protocol, "", "0.0.1", userProvider)
 	assert.NoError(t, err)
 	invoker := &proxy_factory.ProxyInvoker{
-		BaseInvoker: *protocol.NewBaseInvoker(url),
+		BaseInvoker: *base.NewBaseInvoker(url),
 	}
 	handler := func(invocation *invocation.RPCInvocation) protocol.RPCResult {
 		// result := protocol.RPCResult{}

@@ -17,28 +17,10 @@
 
 package protocol
 
-import (
-	"testing"
-)
-
-import (
-	"github.com/stretchr/testify/assert"
-)
-
-import (
-	"dubbo.apache.org/dubbo-go/v3/common"
-)
-
-func TestBaseInvoker(t *testing.T) {
-	url, err := common.NewURL("dubbo://localhost:9090")
-	assert.Nil(t, err)
-
-	ivk := NewBaseInvoker(url)
-	assert.NotNil(t, ivk.GetURL())
-	assert.True(t, ivk.IsAvailable())
-	assert.False(t, ivk.IsDestroyed())
-
-	ivk.Destroy()
-	assert.False(t, ivk.IsAvailable())
-	assert.True(t, ivk.IsDestroyed())
+// Exporter is the interface that wraps the basic GetInvoker method and Destroy UnExport.
+type Exporter interface {
+	// GetInvoker method is to get invoker.
+	GetInvoker() Invoker
+	// UnExport is to un export an exported service
+	UnExport()
 }

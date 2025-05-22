@@ -29,6 +29,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 )
 
 const (
@@ -44,7 +45,7 @@ var grpcProtocol *GrpcProtocol
 
 // GrpcProtocol is gRPC protocol
 type GrpcProtocol struct {
-	protocol.BaseProtocol
+	base.BaseProtocol
 	serverMap  map[string]*Server
 	serverLock sync.Mutex
 }
@@ -52,7 +53,7 @@ type GrpcProtocol struct {
 // NewGRPCProtocol creates new gRPC protocol
 func NewGRPCProtocol() *GrpcProtocol {
 	return &GrpcProtocol{
-		BaseProtocol: protocol.NewBaseProtocol(),
+		BaseProtocol: base.NewBaseProtocol(),
 		serverMap:    make(map[string]*Server),
 	}
 }

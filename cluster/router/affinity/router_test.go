@@ -30,6 +30,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/config_center"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 	"dubbo.apache.org/dubbo-go/v3/remoting"
 )
@@ -84,7 +85,7 @@ func buildInvokers() []protocol.Invoker {
 		if err != nil {
 			panic(err)
 		}
-		res = append(res, protocol.NewBaseInvoker(u))
+		res = append(res, base.NewBaseInvoker(u))
 	}
 	return res
 }

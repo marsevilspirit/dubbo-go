@@ -43,6 +43,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/config"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	invocation_impl "dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 )
 
@@ -54,7 +55,7 @@ var attachmentKey = []string{
 
 // DubboInvoker is implement of protocol.Invoker, a dubboInvoker refer to one service and ip.
 type DubboInvoker struct {
-	protocol.BaseInvoker
+	base.BaseInvoker
 	// the net layer client, it is focus on network communication.
 	client *triple.TripleClient
 	// quitOnce is used to make sure DubboInvoker is only destroyed once
@@ -137,7 +138,7 @@ func NewDubbo3Invoker(url *common.URL) (*DubboInvoker, error) {
 	}
 
 	return &DubboInvoker{
-		BaseInvoker: *protocol.NewBaseInvoker(url),
+		BaseInvoker: *base.NewBaseInvoker(url),
 		client:      client,
 		timeout:     timeout,
 		clientGuard: &sync.RWMutex{},

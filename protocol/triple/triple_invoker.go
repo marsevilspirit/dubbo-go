@@ -32,6 +32,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	tri "dubbo.apache.org/dubbo-go/v3/protocol/triple/triple_protocol"
 )
 
@@ -40,7 +41,7 @@ var triAttachmentKeys = []string{
 }
 
 type TripleInvoker struct {
-	protocol.BaseInvoker
+	base.BaseInvoker
 	quitOnce      sync.Once
 	clientGuard   *sync.RWMutex
 	clientManager *clientManager
@@ -243,7 +244,7 @@ func NewTripleInvoker(url *common.URL) (*TripleInvoker, error) {
 		return nil, err
 	}
 	return &TripleInvoker{
-		BaseInvoker:   *protocol.NewBaseInvoker(url),
+		BaseInvoker:   *base.NewBaseInvoker(url),
 		quitOnce:      sync.Once{},
 		clientGuard:   &sync.RWMutex{},
 		clientManager: cm,

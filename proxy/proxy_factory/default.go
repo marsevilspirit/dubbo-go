@@ -36,6 +36,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/triple/triple_protocol"
 	"dubbo.apache.org/dubbo-go/v3/proxy"
 )
@@ -84,13 +85,13 @@ func (factory *DefaultProxyFactory) GetInvoker(url *common.URL) protocol.Invoker
 		}
 	}
 	return &ProxyInvoker{
-		BaseInvoker: *protocol.NewBaseInvoker(url),
+		BaseInvoker: *base.NewBaseInvoker(url),
 	}
 }
 
 // ProxyInvoker is a invoker struct
 type ProxyInvoker struct {
-	protocol.BaseInvoker
+	base.BaseInvoker
 }
 
 // Invoke is used to call service method by invocation
@@ -183,7 +184,7 @@ func getProviderURL(url *common.URL) *common.URL {
 }
 
 type infoProxyInvoker struct {
-	protocol.BaseInvoker
+	base.BaseInvoker
 	info      *common.ServiceInfo
 	svc       common.RPCService
 	methodMap map[string]*common.MethodInfo
@@ -222,7 +223,7 @@ func (tpi *infoProxyInvoker) Invoke(ctx context.Context, invocation protocol.Inv
 
 func newInfoInvoker(url *common.URL, info *common.ServiceInfo, svc common.RPCService) protocol.Invoker {
 	invoker := &infoProxyInvoker{
-		BaseInvoker: *protocol.NewBaseInvoker(url),
+		BaseInvoker: *base.NewBaseInvoker(url),
 		info:        info,
 		svc:         svc,
 	}

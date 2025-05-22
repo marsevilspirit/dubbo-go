@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package jsonrpc
+package base
 
 import (
 	"sync"
@@ -26,30 +26,33 @@ import (
 )
 
 import (
-	"dubbo.apache.org/dubbo-go/v3/common"
-	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
-	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 )
 
-// JsonrpcExporter is JSON RPC exporter and  extends from base invoker.
-type JsonrpcExporter struct {
-	base.BaseExporter
+// BaseExporter is default exporter implement.
+type BaseExporter struct {
+	key         string
+	invoker     protocol.Invoker
+	exporterMap *sync.Map
 }
 
-// NewJsonrpcExporter creates JSON RPC exporter with @key, @invoker and @exporterMap
-func NewJsonrpcExporter(key string, invoker protocol.Invoker, exporterMap *sync.Map) *JsonrpcExporter {
-	return &JsonrpcExporter{
-		BaseExporter: *base.NewBaseExporter(key, invoker, exporterMap),
+// NewBaseExporter creates a new BaseExporter
+func NewBaseExporter(key string, invoker protocol.Invoker, exporterMap *sync.Map) *BaseExporter {
+	return &BaseExporter{
+		key:         key,
+		invoker:     invoker,
+		exporterMap: exporterMap,
 	}
 }
 
-// UnExport exported JSON RPC service.
-func (je *JsonrpcExporter) UnExport() {
-	interfaceName := je.GetInvoker().GetURL().GetParam(constant.InterfaceKey, "")
-	err := common.ServiceMap.UnRegister(interfaceName, JSONRPC, je.GetInvoker().GetURL().ServiceKey())
-	if err != nil {
-		logger.Errorf("[JsonrpcExporter.UnExport] error: %v", err)
-	}
-	je.BaseExporter.UnExport()
+// GetInvoker gets invoker
+func (de *BaseExporter) GetInvoker() protocol.Invoker {
+	return de.invoker
+}
+
+// UnExport un export service.
+func (de *BaseExporter) UnExport() {
+	logger.Infof("Exporter unexport.")
+	de.invoker.Destroy()
+	de.exporterMap.Delete(de.key)
 }

@@ -28,11 +28,12 @@ import (
 
 import (
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 )
 
 type testMockSeataInvoker struct {
-	protocol.BaseInvoker
+	base.BaseInvoker
 }
 
 func (iv *testMockSeataInvoker) Invoke(ctx context.Context, _ protocol.Invocation) protocol.Result {

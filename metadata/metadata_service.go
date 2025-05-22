@@ -36,6 +36,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/metadata/info"
 	tripleapi "dubbo.apache.org/dubbo-go/v3/metadata/triple_api/proto"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/protocolwrapper"
 	"dubbo.apache.org/dubbo-go/v3/protocol/triple/triple_protocol"
 )
@@ -242,7 +243,7 @@ func (e *serviceExporter) exportV2(port string) {
 
 // serviceInvoker, if base on server.infoInvoker will cause cycle dependency, so we need to use this way
 type serviceInvoker struct {
-	*protocol.BaseInvoker
+	*base.BaseInvoker
 	invoke func(context context.Context, invocation protocol.Invocation) protocol.Result
 }
 

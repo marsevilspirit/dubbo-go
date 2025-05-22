@@ -30,6 +30,7 @@ import (
 import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	invocation_impl "dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 	"dubbo.apache.org/dubbo-go/v3/protocol/rest/client"
 	"dubbo.apache.org/dubbo-go/v3/protocol/rest/config"
@@ -37,7 +38,7 @@ import (
 
 // nolint
 type RestInvoker struct {
-	protocol.BaseInvoker
+	base.BaseInvoker
 	client              client.RestClient
 	restMethodConfigMap map[string]*config.RestMethodConfig
 }
@@ -45,7 +46,7 @@ type RestInvoker struct {
 // NewRestInvoker returns a RestInvoker
 func NewRestInvoker(url *common.URL, client *client.RestClient, restMethodConfig map[string]*config.RestMethodConfig) *RestInvoker {
 	return &RestInvoker{
-		BaseInvoker:         *protocol.NewBaseInvoker(url),
+		BaseInvoker:         *base.NewBaseInvoker(url),
 		client:              *client,
 		restMethodConfigMap: restMethodConfig,
 	}

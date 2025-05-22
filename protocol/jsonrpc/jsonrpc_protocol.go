@@ -33,6 +33,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/config"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 )
 
 const (
@@ -49,7 +50,7 @@ var jsonrpcProtocol *JsonrpcProtocol
 
 // JsonrpcProtocol is JSON RPC protocol.
 type JsonrpcProtocol struct {
-	protocol.BaseProtocol
+	base.BaseProtocol
 	serverMap  map[string]*Server
 	serverLock sync.Mutex
 }
@@ -57,7 +58,7 @@ type JsonrpcProtocol struct {
 // NewJsonrpcProtocol creates JSON RPC protocol
 func NewJsonrpcProtocol() *JsonrpcProtocol {
 	return &JsonrpcProtocol{
-		BaseProtocol: protocol.NewBaseProtocol(),
+		BaseProtocol: base.NewBaseProtocol(),
 		serverMap:    make(map[string]*Server),
 	}
 }

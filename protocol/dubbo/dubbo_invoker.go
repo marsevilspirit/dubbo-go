@@ -36,6 +36,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/config"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 	"dubbo.apache.org/dubbo-go/v3/remoting"
 )
@@ -44,9 +45,9 @@ var attachmentKey = []string{
 	constant.InterfaceKey, constant.GroupKey, constant.TokenKey, constant.VersionKey,
 }
 
-// DubboInvoker is implement of protocol.Invoker. A dubboInvoker refers to one service and ip.
+// DubboInvoker is implement of base.Invoker. A dubboInvoker refers to one service and ip.
 type DubboInvoker struct {
-	protocol.BaseInvoker
+	base.BaseInvoker
 	clientGuard *sync.RWMutex // the exchange layer, it is focus on network communication.
 	client      *remoting.ExchangeClient
 	quitOnce    sync.Once
@@ -59,7 +60,7 @@ func NewDubboInvoker(url *common.URL, client *remoting.ExchangeClient) *DubboInv
 
 	timeout := url.GetParamDuration(constant.TimeoutKey, rt)
 	di := &DubboInvoker{
-		BaseInvoker: *protocol.NewBaseInvoker(url),
+		BaseInvoker: *base.NewBaseInvoker(url),
 		clientGuard: &sync.RWMutex{},
 		client:      client,
 		timeout:     timeout,

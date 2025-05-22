@@ -33,6 +33,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/proxy"
 )
 
@@ -66,7 +67,7 @@ func (factory *PassThroughProxyFactory) GetAsyncProxy(invoker protocol.Invoker, 
 func (factory *PassThroughProxyFactory) GetInvoker(url *common.URL) protocol.Invoker {
 	return &PassThroughProxyInvoker{
 		ProxyInvoker: &ProxyInvoker{
-			BaseInvoker: *protocol.NewBaseInvoker(url),
+			BaseInvoker: *base.NewBaseInvoker(url),
 		},
 	}
 }

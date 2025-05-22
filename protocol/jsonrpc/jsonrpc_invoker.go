@@ -29,19 +29,20 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	invocation_impl "dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 )
 
 // JsonrpcInvoker is JSON RPC invoker
 type JsonrpcInvoker struct {
-	protocol.BaseInvoker
+	base.BaseInvoker
 	client *HTTPClient
 }
 
 // NewJsonrpcInvoker creates JSON RPC invoker with @url and @client
 func NewJsonrpcInvoker(url *common.URL, client *HTTPClient) *JsonrpcInvoker {
 	return &JsonrpcInvoker{
-		BaseInvoker: *protocol.NewBaseInvoker(url),
+		BaseInvoker: *base.NewBaseInvoker(url),
 		client:      client,
 	}
 }

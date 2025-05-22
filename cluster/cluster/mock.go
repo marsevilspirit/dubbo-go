@@ -31,6 +31,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/cluster/directory"
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 )
 
 var Count int
@@ -52,7 +53,7 @@ func NewMockCluster() Cluster {
 }
 
 func (cluster *mockCluster) Join(directory directory.Directory) protocol.Invoker {
-	return BuildInterceptorChain(protocol.NewBaseInvoker(directory.GetURL()))
+	return BuildInterceptorChain(base.NewBaseInvoker(directory.GetURL()))
 }
 
 type MockInvoker struct {

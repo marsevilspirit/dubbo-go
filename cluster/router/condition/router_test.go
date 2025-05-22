@@ -35,6 +35,7 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/config_center"
 	"dubbo.apache.org/dubbo-go/v3/config_center/configurator"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 	"dubbo.apache.org/dubbo-go/v3/protocol/invocation"
 	"dubbo.apache.org/dubbo-go/v3/remoting"
 )
@@ -146,9 +147,9 @@ func TestRouteMatchFilter(t *testing.T) {
 
 	rpcInvocation := invocation.NewRPCInvocation(method, nil, nil)
 
-	ink1 := protocol.NewBaseInvoker(url1)
-	ink2 := protocol.NewBaseInvoker(url2)
-	ink3 := protocol.NewBaseInvoker(url3)
+	ink1 := base.NewBaseInvoker(url1)
+	ink2 := base.NewBaseInvoker(url2)
+	ink3 := base.NewBaseInvoker(url3)
 
 	invokerList := make([]protocol.Invoker, 0, 3)
 	invokerList = append(invokerList, ink1)
@@ -392,14 +393,14 @@ func TestRouteReturn(t *testing.T) {
 			invokers := make([]protocol.Invoker, 0, len(data.urls))
 			for _, urlStr := range data.urls {
 				url, _ := common.NewURL(urlStr)
-				invoker := protocol.NewBaseInvoker(url)
+				invoker := base.NewBaseInvoker(url)
 				invokers = append(invokers, invoker)
 			}
 
 			wantInvokers := make([]protocol.Invoker, 0, len(data.wantUrls))
 			for _, wantUrlStr := range data.wantUrls {
 				url, _ := common.NewURL(wantUrlStr)
-				invoker := protocol.NewBaseInvoker(url)
+				invoker := base.NewBaseInvoker(url)
 				wantInvokers = append(wantInvokers, invoker)
 			}
 
@@ -425,9 +426,9 @@ func TestRouteArguments(t *testing.T) {
 	url2, _ := common.NewURL(localProviderAddr)
 	url3, _ := common.NewURL(localProviderAddr)
 
-	ink1 := protocol.NewBaseInvoker(url1)
-	ink2 := protocol.NewBaseInvoker(url2)
-	ink3 := protocol.NewBaseInvoker(url3)
+	ink1 := base.NewBaseInvoker(url1)
+	ink2 := base.NewBaseInvoker(url2)
+	ink3 := base.NewBaseInvoker(url3)
 
 	invokerList := make([]protocol.Invoker, 0, 3)
 	invokerList = append(invokerList, ink1)
@@ -497,9 +498,9 @@ func TestRouteAttachments(t *testing.T) {
 	url2, _ := common.NewURL(localProviderAddr)
 	url3, _ := common.NewURL(localProviderAddr)
 
-	ink1 := protocol.NewBaseInvoker(url1)
-	ink2 := protocol.NewBaseInvoker(url2)
-	ink3 := protocol.NewBaseInvoker(url3)
+	ink1 := base.NewBaseInvoker(url1)
+	ink2 := base.NewBaseInvoker(url2)
+	ink3 := base.NewBaseInvoker(url3)
 
 	invokerList := make([]protocol.Invoker, 0, 3)
 	invokerList = append(invokerList, ink1)
@@ -578,9 +579,9 @@ func TestRouteRangePattern(t *testing.T) {
 	url2, _ := common.NewURL(localProviderAddr)
 	url3, _ := common.NewURL(localProviderAddr)
 
-	ink1 := protocol.NewBaseInvoker(url1)
-	ink2 := protocol.NewBaseInvoker(url2)
-	ink3 := protocol.NewBaseInvoker(url3)
+	ink1 := base.NewBaseInvoker(url1)
+	ink2 := base.NewBaseInvoker(url2)
+	ink3 := base.NewBaseInvoker(url3)
 
 	invokerList := make([]protocol.Invoker, 0, 3)
 	invokerList = append(invokerList, ink1)
@@ -663,9 +664,9 @@ func TestRouteMultipleConditions(t *testing.T) {
 	url2, _ := common.NewURL(localProviderAddr)
 	url3, _ := common.NewURL(localProviderAddr)
 
-	ink1 := protocol.NewBaseInvoker(url1)
-	ink2 := protocol.NewBaseInvoker(url2)
-	ink3 := protocol.NewBaseInvoker(url3)
+	ink1 := base.NewBaseInvoker(url1)
+	ink2 := base.NewBaseInvoker(url2)
+	ink3 := base.NewBaseInvoker(url3)
 
 	invokerList := make([]protocol.Invoker, 0, 3)
 	invokerList = append(invokerList, ink1)
@@ -729,9 +730,9 @@ func TestServiceRouter(t *testing.T) {
 	url2, _ := common.NewURL(remoteProviderAddr + region)
 	url3, _ := common.NewURL(localProviderAddr)
 
-	ink1 := protocol.NewBaseInvoker(url1)
-	ink2 := protocol.NewBaseInvoker(url2)
-	ink3 := protocol.NewBaseInvoker(url3)
+	ink1 := base.NewBaseInvoker(url1)
+	ink2 := base.NewBaseInvoker(url2)
+	ink3 := base.NewBaseInvoker(url3)
 
 	invokerList := make([]protocol.Invoker, 0, 3)
 	invokerList = append(invokerList, ink1)
@@ -774,9 +775,9 @@ func TestApplicationRouter(t *testing.T) {
 	url2, _ := common.NewURL(localProviderAddr + "?application=demo-provider&region=hangzhou")
 	url3, _ := common.NewURL(localProviderAddr + "?application=demo-provider")
 
-	ink1 := protocol.NewBaseInvoker(url1)
-	ink2 := protocol.NewBaseInvoker(url2)
-	ink3 := protocol.NewBaseInvoker(url3)
+	ink1 := base.NewBaseInvoker(url1)
+	ink2 := base.NewBaseInvoker(url2)
+	ink3 := base.NewBaseInvoker(url3)
 
 	invokerList := make([]protocol.Invoker, 0, 3)
 	invokerList = append(invokerList, ink1)
@@ -861,7 +862,7 @@ func buildInvokers() []protocol.Invoker {
 		if err != nil {
 			panic(err)
 		}
-		res = append(res, protocol.NewBaseInvoker(u))
+		res = append(res, base.NewBaseInvoker(u))
 	}
 	return res
 }

@@ -35,25 +35,26 @@ import (
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/filter"
 	"dubbo.apache.org/dubbo-go/v3/protocol"
+	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 )
 
 const mockFilterKey = "mockEcho"
 
 func TestProtocolFilterWrapperExport(t *testing.T) {
 	filtProto := extension.GetProtocol(FILTER)
-	filtProto.(*ProtocolFilterWrapper).protocol = &protocol.BaseProtocol{}
+	filtProto.(*ProtocolFilterWrapper).protocol = &base.BaseProtocol{}
 
 	u := common.NewURLWithOptions(
 		common.WithParams(url.Values{}),
 		common.WithParamsValue(constant.ServiceFilterKey, mockFilterKey))
-	exporter := filtProto.Export(protocol.NewBaseInvoker(u))
+	exporter := filtProto.Export(base.NewBaseInvoker(u))
 	_, ok := exporter.GetInvoker().(*FilterInvoker)
 	assert.True(t, ok)
 }
 
 func TestProtocolFilterWrapperRefer(t *testing.T) {
 	filtProto := extension.GetProtocol(FILTER)
-	filtProto.(*ProtocolFilterWrapper).protocol = &protocol.BaseProtocol{}
+	filtProto.(*ProtocolFilterWrapper).protocol = &base.BaseProtocol{}
 
 	u := common.NewURLWithOptions(
 		common.WithParams(url.Values{}),

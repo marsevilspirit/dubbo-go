@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-package proxy_factory
+package base
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -28,33 +27,18 @@ import (
 
 import (
 	"dubbo.apache.org/dubbo-go/v3/common"
-	"dubbo.apache.org/dubbo-go/v3/protocol/base"
 )
 
-func TestGetProxy(t *testing.T) {
-	proxyFactory := NewDefaultProxyFactory()
-	url := common.NewURLWithOptions()
-	proxy := proxyFactory.GetProxy(base.NewBaseInvoker(url), url)
-	assert.NotNil(t, proxy)
-}
+func TestBaseInvoker(t *testing.T) {
+	url, err := common.NewURL("dubbo://localhost:9090")
+	assert.Nil(t, err)
 
-type TestAsync struct{}
+	ivk := NewBaseInvoker(url)
+	assert.NotNil(t, ivk.GetURL())
+	assert.True(t, ivk.IsAvailable())
+	assert.False(t, ivk.IsDestroyed())
 
-func (u *TestAsync) CallBack(res common.CallbackResponse) {
-	fmt.Println("CallBack res:", res)
-}
-
-func TestGetAsyncProxy(t *testing.T) {
-	proxyFactory := NewDefaultProxyFactory()
-	url := common.NewURLWithOptions()
-	async := &TestAsync{}
-	proxy := proxyFactory.GetAsyncProxy(base.NewBaseInvoker(url), async.CallBack, url)
-	assert.NotNil(t, proxy)
-}
-
-func TestGetInvoker(t *testing.T) {
-	proxyFactory := NewDefaultProxyFactory()
-	url := common.NewURLWithOptions()
-	invoker := proxyFactory.GetInvoker(url)
-	assert.True(t, invoker.IsAvailable())
+	ivk.Destroy()
+	assert.False(t, ivk.IsAvailable())
+	assert.True(t, ivk.IsDestroyed())
 }
