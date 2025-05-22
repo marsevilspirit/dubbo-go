@@ -85,6 +85,9 @@ func (tp *TripleProtocol) openServer(invoker protocol.Invoker, info *common.Serv
 		panic("[TRIPLE Protocol]" + url.Key() + "is not existing")
 	}
 
+	// TODO: get triple ServerOptions
+	// srvOpts:= url.GetAttribute(constant.TripleServerOptionsKey)
+	// srv := NewServer(SrvOpts)
 	srv := NewServer()
 	srv.Start(invoker, info)
 	tp.serverMap[url.Location] = srv

@@ -54,14 +54,18 @@ import (
 // provide functionality.
 type Server struct {
 	triServer *tri.Server
+	cfg       *ServerOptions
 	mu        sync.RWMutex
 	services  map[string]grpc.ServiceInfo
 }
 
 // NewServer creates a new TRIPLE server.
 // triServer would not be initialized since we could not get configurations here.
-func NewServer() *Server {
+func NewServer(opts ...ServerOption) *Server {
+	newSrvOpts := defaultServerOptions()
+	newSrvOpts.init(opts...)
 	return &Server{
+		cfg:      newSrvOpts,
 		services: make(map[string]grpc.ServiceInfo),
 	}
 }
