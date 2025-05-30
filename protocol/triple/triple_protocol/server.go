@@ -29,6 +29,8 @@ import (
 
 	"github.com/dubbogo/grpc-go"
 
+	"github.com/quic-go/quic-go/http3"
+
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
@@ -38,6 +40,9 @@ type Server struct {
 	mux      *http.ServeMux
 	handlers map[string]*Handler
 	httpSrv  *http.Server
+
+	http3Enable bool
+	http3Srv    *http3.Server
 }
 
 func (s *Server) RegisterUnaryHandler(
@@ -171,14 +176,21 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) Run() error {
 	s.httpSrv.Handler = h2c.NewHandler(s, &http2.Server{})
+	s.http3Srv.Handler = s.mux
 
 	var err error
-	if s.httpSrv.TLSConfig != nil {
-		// TODO: Maybe we should be able to find a better way to start TLS.
-		err = s.httpSrv.ListenAndServeTLS("", "")
+	if false {
+		if s.httpSrv.TLSConfig != nil {
+			// TODO: Maybe we should be able to find a better way to start TLS.
+			err = s.httpSrv.ListenAndServeTLS("", "")
+		} else {
+			err = s.httpSrv.ListenAndServe()
+		}
 	} else {
-		err = s.httpSrv.ListenAndServe()
+		logger.Debug("@@triple HTTP/3 server start@@")
+		err = s.http3Srv.ListenAndServe()
 	}
+
 	return err
 }
 
@@ -199,5 +211,6 @@ func NewServer(addr string) *Server {
 		mux:      http.NewServeMux(),
 		handlers: make(map[string]*Handler),
 		httpSrv:  &http.Server{Addr: addr},
+		http3Srv: &http3.Server{Addr: addr},
 	}
 }
