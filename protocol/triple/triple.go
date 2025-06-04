@@ -109,7 +109,7 @@ func (tp *TripleProtocol) Refer(url *common.URL) base.Invoker {
 		invoker, err = NewDubbo3Invoker(url)
 	}
 	if err != nil {
-		logger.Warnf("can't dial the server: %s", url.Key())
+		logger.Warnf("can't dial the server: %s", err)
 		return nil
 	}
 	tp.SetInvokers(invoker)
