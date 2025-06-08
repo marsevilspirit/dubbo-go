@@ -196,6 +196,7 @@ func (s *Server) Run() error {
 
 func (s *Server) SetTLSConfig(c *tls.Config) {
 	s.httpSrv.TLSConfig = c
+	s.http3Srv.TLSConfig = c
 }
 
 func (s *Server) Stop() error {
