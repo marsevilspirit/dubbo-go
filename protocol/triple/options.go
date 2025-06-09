@@ -92,3 +92,9 @@ func WithMaxServerRecvMsgSize(size string) Option {
 		opts.Triple.MaxServerRecvMsgSize = size
 	}
 }
+
+func Http3Enable() Option {
+	return func(opts *Options) {
+		opts.Triple.Http3.Enable = true
+	}
+}

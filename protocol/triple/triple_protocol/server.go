@@ -179,7 +179,7 @@ func (s *Server) Run() error {
 	s.http3Srv.Handler = s.mux
 
 	var err error
-	if false {
+	if !s.http3Enable {
 		if s.httpSrv.TLSConfig != nil {
 			// TODO: Maybe we should be able to find a better way to start TLS.
 			err = s.httpSrv.ListenAndServeTLS("", "")
@@ -197,6 +197,10 @@ func (s *Server) Run() error {
 func (s *Server) SetTLSConfig(c *tls.Config) {
 	s.httpSrv.TLSConfig = c
 	s.http3Srv.TLSConfig = c
+}
+
+func (s *Server) SetHttp3Enable(enable bool) {
+	s.http3Enable = enable
 }
 
 func (s *Server) Stop() error {
