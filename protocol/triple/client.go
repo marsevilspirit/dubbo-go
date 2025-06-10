@@ -36,6 +36,7 @@ import (
 
 	"golang.org/x/net/http2"
 
+	// "github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
 )
 
@@ -219,7 +220,7 @@ func newClientManager(url *common.URL) (*clientManager, error) {
 	var transport http.RoundTripper
 	callType := url.GetParam(constant.CallHTTPTypeKey, constant.CallHTTP2)
 
-	if tripleConf != nil && tripleConf.Http3 != nil && tripleConf.Http3.Enable {
+	if tripleConf != nil && tripleConf.Http3Config != nil && tripleConf.Http3Config.Enable {
 		callType = constant.CallHTTP3
 	}
 
@@ -255,6 +256,10 @@ func newClientManager(url *common.URL) (*clientManager, error) {
 		} else {
 			transport = &http3.Transport{
 				TLSClientConfig: cfg,
+				// TODO: add http3 keepalive config
+				// QUICConfig: &quic.Config{
+				// 	MaxIdleTimeout: keepAliveInterval,
+				// },
 			}
 		}
 		logger.Infof("Triple http3 client transport init successfully")

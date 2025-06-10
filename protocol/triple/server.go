@@ -127,8 +127,8 @@ func (s *Server) Start(invoker base.Invoker, info *common.ServiceInfo) {
 		tripleConf = tripleConfRaw.(*global.TripleConfig)
 	}
 
-	if tripleConf != nil && tripleConf.Http3 != nil {
-		s.triServer.SetHttp3Enable(tripleConf.Http3.Enable)
+	if tripleConf != nil && tripleConf.Http3Config != nil {
+		s.triServer.SetHttp3Enable(tripleConf.Http3Config.Enable)
 	}
 
 	hanOpts := getHanOpts(url, tripleConf)

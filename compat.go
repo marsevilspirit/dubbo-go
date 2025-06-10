@@ -101,7 +101,7 @@ func compatTripleConfig(c *global.TripleConfig) *config.TripleConfig {
 	return &config.TripleConfig{
 		MaxServerSendMsgSize: c.MaxServerSendMsgSize,
 		MaxServerRecvMsgSize: c.MaxServerRecvMsgSize,
-		Http3:                compatHttp3Config(c.Http3),
+		Http3Config:          compatHttp3Config(c.Http3Config),
 		KeepAliveInterval:    c.KeepAliveInterval,
 		KeepAliveTimeout:     c.KeepAliveTimeout,
 	}
