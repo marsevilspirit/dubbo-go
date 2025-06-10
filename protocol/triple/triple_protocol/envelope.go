@@ -216,6 +216,10 @@ func (r *envelopeReader) Read(env *envelope) *Error {
 	// prefixe is Length-Prefixed-Message.
 	// Read prefix firstly, then read the packet with length specified by length field
 	prefixes := [5]byte{}
+	// NOTE: We need to go to ReadFull prefixes and then handle the following steps,
+	// because when receiving data using the HTTP/3 protocol, due to the underlying
+	// UDP protocol, it often leads to processing the next steps without Read Full,
+	// which will cause EOF error.
 	prefixBytesRead, err := io.ReadFull(r.reader, prefixes[:])
 
 	switch {
