@@ -22,4 +22,10 @@ type Http3Config struct {
 	// Whether to enable HTTP/3 support.
 	// The default value is false.
 	Enable bool `yaml:"enable" json:"enable,omitempty"`
+	// Whether to enable HTTP/3 negotiation.
+	// If set to false, HTTP/2 alt-svc negotiation will be skipped,
+	// enabling HTTP/3 but disabling HTTP/2 on the consumer side.
+	// The default value is true.
+	// TODO: negotiation implement
+	// negotiation bool
 }
