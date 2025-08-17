@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -53,6 +54,82 @@ const (
 	httpsPrefix string = "https://"
 )
 
+// ConnectionPoolConfig 连接池配置
+type ConnectionPoolConfig struct {
+	MaxConnections      int           `default:"100"`
+	MaxIdleConnections  int           `default:"10"`
+	IdleTimeout         time.Duration `default:"30s"`
+	HealthCheckInterval time.Duration `default:"10s"`
+	MaxRetries          int           `default:"3"`
+	RetryDelay          time.Duration `default:"100ms"`
+	EnableHealthCheck   bool          `default:"true"`
+}
+
+// PooledConnection 表示一个池化的连接
+type PooledConnection struct {
+	id         string
+	client     *tri.Client
+	httpClient *http.Client
+	url        *common.URL
+	lastUsed   time.Time
+	createdAt  time.Time
+	useCount   int64
+	isActive   bool
+	mu         sync.RWMutex
+}
+
+// DefaultConnectionPoolConfig 默认连接池配置
+func DefaultConnectionPoolConfig() *ConnectionPoolConfig {
+	return &ConnectionPoolConfig{
+		MaxConnections:      100,
+		MaxIdleConnections:  10,
+		IdleTimeout:         30 * time.Second,
+		HealthCheckInterval: 10 * time.Second,
+		MaxRetries:          3,
+		RetryDelay:          100 * time.Millisecond,
+		EnableHealthCheck:   true,
+	}
+}
+
+// PooledConnection 方法实现
+
+func (pc *PooledConnection) isHealthy() bool {
+	pc.mu.RLock()
+	defer pc.mu.RUnlock()
+	return pc.isActive || time.Since(pc.lastUsed) <= 30*time.Second
+}
+
+func (pc *PooledConnection) markActive() {
+	pc.mu.Lock()
+	defer pc.mu.Unlock()
+	pc.isActive = true
+	pc.lastUsed = time.Now()
+}
+
+func (pc *PooledConnection) GetClient() *tri.Client {
+	return pc.client
+}
+
+func (pc *PooledConnection) GetHttpClient() *http.Client {
+	return pc.httpClient
+}
+
+func (pc *PooledConnection) GetURL() *common.URL {
+	return pc.url
+}
+
+func (pc *PooledConnection) GetLastUsed() time.Time {
+	pc.mu.RLock()
+	defer pc.mu.RUnlock()
+	return pc.lastUsed
+}
+
+func (pc *PooledConnection) GetUseCount() int64 {
+	pc.mu.RLock()
+	defer pc.mu.RUnlock()
+	return pc.useCount
+}
+
 // clientManager wraps triple clients and is responsible for find concrete triple client to invoke
 // callUnary, callClientStream, callServerStream, callBidiStream.
 // A Reference has a clientManager.
@@ -60,6 +137,15 @@ type clientManager struct {
 	isIDL bool
 	// triple_protocol clients, key is method name
 	triClients map[string]*tri.Client
+	// HTTP client for connection pooling
+	httpClient *http.Client
+	// URL for this client manager
+	url *common.URL
+	// Connection pool configuration
+	poolConfig *ConnectionPoolConfig
+	// Connection pool for HTTP connections
+	connectionPool map[string]*PooledConnection
+	poolMutex      sync.RWMutex
 }
 
 // TODO: code a triple client between clientManager and triple_protocol client
@@ -74,59 +160,231 @@ func (cm *clientManager) getClient(method string) (*tri.Client, error) {
 }
 
 func (cm *clientManager) callUnary(ctx context.Context, method string, req, resp any) error {
-	triClient, err := cm.getClient(method)
+	// 从连接池获取连接
+	conn, err := cm.getPooledConnection(method, cm.getURL())
 	if err != nil {
 		return err
 	}
+
+	// 确保连接在使用后被释放
+	defer cm.releasePooledConnection(conn)
+
 	triReq := tri.NewRequest(req)
 	triResp := tri.NewResponse(resp)
-	if err := triClient.CallUnary(ctx, triReq, triResp); err != nil {
+	if err := conn.GetClient().CallUnary(ctx, triReq, triResp); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (cm *clientManager) callClientStream(ctx context.Context, method string) (any, error) {
-	triClient, err := cm.getClient(method)
+	// 从连接池获取连接
+	conn, err := cm.getPooledConnection(method, cm.getURL())
 	if err != nil {
 		return nil, err
 	}
-	stream, err := triClient.CallClientStream(ctx)
+
+	// 注意：对于流式调用，连接需要在流关闭时释放
+	// 这里暂时不释放，由调用方负责释放
+	stream, err := conn.GetClient().CallClientStream(ctx)
 	if err != nil {
+		cm.releasePooledConnection(conn)
 		return nil, err
 	}
 	return stream, nil
 }
 
 func (cm *clientManager) callServerStream(ctx context.Context, method string, req any) (any, error) {
-	triClient, err := cm.getClient(method)
+	// 从连接池获取连接
+	conn, err := cm.getPooledConnection(method, cm.getURL())
 	if err != nil {
 		return nil, err
 	}
+
+	// 注意：对于流式调用，连接需要在流关闭时释放
+	// 这里暂时不释放，由调用方负责释放
 	triReq := tri.NewRequest(req)
-	stream, err := triClient.CallServerStream(ctx, triReq)
+	stream, err := conn.GetClient().CallServerStream(ctx, triReq)
 	if err != nil {
+		cm.releasePooledConnection(conn)
 		return nil, err
 	}
 	return stream, nil
 }
 
 func (cm *clientManager) callBidiStream(ctx context.Context, method string) (any, error) {
-	triClient, err := cm.getClient(method)
+	// 从连接池获取连接
+	conn, err := cm.getPooledConnection(method, cm.getURL())
 	if err != nil {
 		return nil, err
 	}
-	stream, err := triClient.CallBidiStream(ctx)
+
+	// 注意：对于流式调用，连接需要在流关闭时释放
+	// 这里暂时不释放，由调用方负责释放
+	stream, err := conn.GetClient().CallBidiStream(ctx)
 	if err != nil {
+		cm.releasePooledConnection(conn)
 		return nil, err
 	}
 	return stream, nil
 }
 
 func (cm *clientManager) close() error {
-	// There is no need to release resources right now.
-	// But we leave this function here for future use.
+	// 关闭所有池化连接
+	cm.poolMutex.Lock()
+	defer cm.poolMutex.Unlock()
+
+	for _, conn := range cm.connectionPool {
+		conn.mu.Lock()
+		conn.isActive = false
+		conn.mu.Unlock()
+	}
+	cm.connectionPool = make(map[string]*PooledConnection)
 	return nil
+}
+
+// getPooledConnection 从连接池获取连接
+func (cm *clientManager) getPooledConnection(method string, url *common.URL) (*PooledConnection, error) {
+	connectionKey := cm.getConnectionKey(url)
+
+	cm.poolMutex.RLock()
+	conn, exists := cm.connectionPool[connectionKey]
+	cm.poolMutex.RUnlock()
+
+	if exists && conn.isHealthy() {
+		conn.markActive()
+		return conn, nil
+	}
+
+	// 如果连接不存在或不健康，创建新连接
+	return cm.createPooledConnection(method, url, connectionKey)
+}
+
+// createPooledConnection 创建新的池化连接
+func (cm *clientManager) createPooledConnection(method string, url *common.URL, connectionKey string) (*PooledConnection, error) {
+	cm.poolMutex.Lock()
+	defer cm.poolMutex.Unlock()
+
+	// 检查连接数限制
+	if len(cm.connectionPool) >= cm.poolConfig.MaxConnections {
+		// 尝试清理不健康的连接
+		cm.cleanupUnhealthyConnections()
+		if len(cm.connectionPool) >= cm.poolConfig.MaxConnections {
+			return nil, fmt.Errorf("connection pool is full, max connections: %d", cm.poolConfig.MaxConnections)
+		}
+	}
+
+	// 创建新的连接
+	conn, err := cm.newPooledConnection(method, url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create connection: %w", err)
+	}
+
+	cm.connectionPool[connectionKey] = conn
+	logger.Debugf("Created new pooled connection: %s", connectionKey)
+	return conn, nil
+}
+
+// newPooledConnection 创建单个池化连接
+func (cm *clientManager) newPooledConnection(method string, url *common.URL) (*PooledConnection, error) {
+	// 获取指定方法的客户端
+	client, err := cm.getClient(method)
+	if err != nil {
+		return nil, err
+	}
+
+	// 创建连接对象
+	conn := &PooledConnection{
+		id:         fmt.Sprintf("%s-%s-%d", url.Location, method, time.Now().UnixNano()),
+		client:     client,
+		httpClient: cm.httpClient,
+		url:        url,
+		createdAt:  time.Now(),
+		lastUsed:   time.Now(),
+		isActive:   true,
+	}
+
+	return conn, nil
+}
+
+// releasePooledConnection 释放连接回连接池
+func (cm *clientManager) releasePooledConnection(conn *PooledConnection) {
+	if conn == nil {
+		return
+	}
+
+	conn.mu.Lock()
+	defer conn.mu.Unlock()
+
+	if !conn.isActive {
+		return
+	}
+
+	conn.isActive = false
+	conn.lastUsed = time.Now()
+	conn.useCount++
+
+	logger.Debugf("Released pooled connection: %s", conn.id)
+}
+
+// getConnectionKey 生成连接键
+func (cm *clientManager) getConnectionKey(url *common.URL) string {
+	return fmt.Sprintf("%s://%s%s", url.Protocol, url.Location, url.Path)
+}
+
+// cleanupUnhealthyConnections 清理不健康的连接
+func (cm *clientManager) cleanupUnhealthyConnections() {
+	now := time.Now()
+	toRemove := make([]string, 0)
+
+	for key, conn := range cm.connectionPool {
+		conn.mu.RLock()
+		shouldRemove := !conn.isActive && now.Sub(conn.lastUsed) > cm.poolConfig.IdleTimeout
+		conn.mu.RUnlock()
+
+		if shouldRemove {
+			toRemove = append(toRemove, key)
+		}
+	}
+
+	for _, key := range toRemove {
+		delete(cm.connectionPool, key)
+		logger.Debugf("Removed unhealthy connection: %s", key)
+	}
+}
+
+// GetPoolStats 获取连接池统计信息
+func (cm *clientManager) GetPoolStats() map[string]interface{} {
+	cm.poolMutex.RLock()
+	defer cm.poolMutex.RUnlock()
+
+	totalConnections := len(cm.connectionPool)
+	activeConnections := 0
+	idleConnections := 0
+
+	for _, conn := range cm.connectionPool {
+		conn.mu.RLock()
+		if conn.isActive {
+			activeConnections++
+		} else {
+			idleConnections++
+		}
+		conn.mu.RUnlock()
+	}
+
+	return map[string]interface{}{
+		"total_connections":  totalConnections,
+		"active_connections": activeConnections,
+		"idle_connections":   idleConnections,
+		"pool_size":          totalConnections,
+		"max_connections":    cm.poolConfig.MaxConnections,
+		"max_idle":           cm.poolConfig.MaxIdleConnections,
+	}
+}
+
+// getURL 获取URL
+func (cm *clientManager) getURL() *common.URL {
+	return cm.url
 }
 
 // newClientManager extracts configurations from url and builds clientManager
@@ -306,9 +564,30 @@ func newClientManager(url *common.URL) (*clientManager, error) {
 		}
 	}
 
+	// 创建连接池配置
+	poolConfig := DefaultConnectionPoolConfig()
+
+	// 从URL参数中读取连接池配置
+	if maxConn := url.GetParamInt("max_connections", 0); maxConn > 0 {
+		poolConfig.MaxConnections = int(maxConn)
+	}
+	if maxIdle := url.GetParamInt("max_idle_connections", 0); maxIdle > 0 {
+		poolConfig.MaxIdleConnections = int(maxIdle)
+	}
+	if idleTimeout := url.GetParamDuration("idle_timeout", ""); idleTimeout > 0 {
+		poolConfig.IdleTimeout = idleTimeout
+	}
+	if healthCheckInterval := url.GetParamDuration("health_check_interval", ""); healthCheckInterval > 0 {
+		poolConfig.HealthCheckInterval = healthCheckInterval
+	}
+
 	return &clientManager{
-		isIDL:      isIDL,
-		triClients: triClients,
+		isIDL:          isIDL,
+		triClients:     triClients,
+		httpClient:     httpClient,
+		url:            url,
+		poolConfig:     poolConfig,
+		connectionPool: make(map[string]*PooledConnection),
 	}, nil
 }
 
