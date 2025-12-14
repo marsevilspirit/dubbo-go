@@ -1090,6 +1090,7 @@ func CompatGlobalTLSConfig(c *config.TLSConfig) *global.TLSConfig {
 	if c == nil {
 		return nil
 	}
+
 	return &global.TLSConfig{
 		CACertFile:    c.CACertFile,
 		TLSCertFile:   c.TLSCertFile,
